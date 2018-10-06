@@ -5,6 +5,8 @@ import sys
 from PIL import Image
 import re
 
+import pydicom
+
 import cv2
 
 import torch
