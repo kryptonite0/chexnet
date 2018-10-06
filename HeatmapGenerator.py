@@ -110,7 +110,7 @@ class HeatmapGenerator ():
         cam = cv2.resize(cam, (transCrop, transCrop))
         heatmap = cv2.applyColorMap(np.uint8(255*cam), cv2.COLORMAP_JET)
               
-        img = heatmap * 0.5 + imgOriginal
+        img = heatmap #* 0.5 + imgOriginal
             
         cv2.imwrite(pathOutputFile, img)
         
