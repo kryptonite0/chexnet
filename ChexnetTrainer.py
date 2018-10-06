@@ -189,18 +189,44 @@ class ChexnetTrainer ():
     #---- dataPRED - predicted data
     #---- classCount - number of classes
     
-    def computeAUROC (dataGT, dataPRED, classCount):
+#     def computeAUROC (dataGT, dataPRED, classCount):
         
-        outAUROC = []
+#         outAUROC = []
         
-        datanpGT = dataGT.cpu().numpy()
-        datanpPRED = dataPRED.cpu().numpy()
+#         datanpGT = dataGT.cpu().numpy()
+#         datanpPRED = dataPRED.cpu().numpy()
         
-        for i in range(classCount):
-            outAUROC.append(roc_auc_score(datanpGT[:, i], datanpPRED[:, i]))
+#         for i in range(classCount):
+#             outAUROC.append(roc_auc_score(datanpGT[:, i], datanpPRED[:, i]))
             
-        return outAUROC
-        
+#         return outAUROC
+
+    # redefine metric function to calculate auc and accuracy for one single class
+    def compute_metrics_class(gt, pred_proba, class_name):
+        """Computes Area Under the Curve (AUC) and Accuracy from prediction scores for one single class.
+        Args:
+            gt: Pytorch tensor on GPU, shape = [n_samples, n_classes]
+              true binary labels.
+            pred: Pytorch tensor on GPU, shape = [n_samples, n_classes]
+              can either be probability estimates of the positive class,
+              confidence values, or binary decisions.
+        Returns:
+            Dictionary with metrics values.
+        """
+        metrics = {}
+
+        index_class = CLASS_NAMES.index(class_name)
+        gt_class = gt.cpu().numpy()[:, index_class]
+        pred_proba_class = pred_proba.cpu().numpy()[:, index_class]
+        pred_class = np.zeros(len(pred_proba_class))
+        pred_class[pred_proba_class>=0.5] = 1
+
+        AUROC_class = roc_auc_score(gt_class, pred_proba_class)
+        metrics['AUROC'] = AUROC_class
+
+        accuracy_class = float(np.sum(gt_class == pred_class)) / float(len(pred_class))
+        metrics['accuracy'] = accuracy_class
+        return metrics       
         
     #--------------------------------------------------------------------------------  
     
@@ -278,16 +304,21 @@ class ChexnetTrainer ():
             
             outPRED = torch.cat((outPRED, outMean.data), 0)
 
-        aurocIndividual = ChexnetTrainer.computeAUROC(outGT, outPRED, nnClassCount)
-        aurocMean = np.array(aurocIndividual).mean()
+        metrics_pneumonia = compute_metrics_class(outGT, outPRED, 'Pneumonia')
+        print('The AUROC for Pneumonia is {}'.format(metrics_pneumonia['AUROC']))
+        print('The accuracy for Pneumonia is {}'.format(metrics_pneumonia['accuracy']))
+        return #metrics_pneumonia
+
+#         aurocIndividual = ChexnetTrainer.computeAUROC(outGT, outPRED, nnClassCount)
+#         aurocMean = np.array(aurocIndividual).mean()
         
-        print ('AUROC mean ', aurocMean)
+#         print ('AUROC mean ', aurocMean)
         
-        for i in range (0, len(aurocIndividual)):
-            print (CLASS_NAMES[i], ' ', aurocIndividual[i])
+#         for i in range (0, len(aurocIndividual)):
+#             print (CLASS_NAMES[i], ' ', aurocIndividual[i])
         
      
-        return
+#         return
 #-------------------------------------------------------------------------------- 
 
 
