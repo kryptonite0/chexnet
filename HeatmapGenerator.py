@@ -38,16 +38,7 @@ class HeatmapGenerator ():
 
         print("=> loading checkpoint")
         modelCheckpoint = torch.load(pathModel)
-        # Error when loading DenseNet model : Missing key(s) in state_dict
         # https://github.com/KaiyangZhou/deep-person-reid/issues/23
-        # The error is caused by the mismatch in keys, e.g. layers were named 'norm.1', 'conv.1', 
-        # but are now named 'norm1', 'conv1' (I trained the model with the old torchvision). 
-        # modify:
-        # '.'s are no longer allowed in module names, but pervious _DenseLayer
-        # has keys 'norm.1', 'relu.1', 'conv.1', 'norm.2', 'relu.2', 'conv.2'.
-        # They are also in the checkpoints in model_urls. 
-        # This pattern is used to find such keys.
-        # https://github.com/pytorch/vision/blob/50b2f910490a731c4cd50db5813b291860f02237/torchvision/models/densenet.py#L28
         pattern = re.compile(
             r'^(.*denselayer\d+\.(?:norm|relu|conv))\.((?:[12])\.(?:weight|bias|running_mean|running_var))$')
         state_dict = modelCheckpoint['state_dict']
@@ -112,14 +103,14 @@ class HeatmapGenerator ():
         
 #-------------------------------------------------------------------------------- 
 
-pathInputImage = 'test/00009285_000.png'
-pathOutputImage = 'test/heatmap.png'
-pathModel = 'models/m-25012018-123527.pth.tar'
+# pathInputImage = 'test/00009285_000.png'
+# pathOutputImage = 'test/heatmap.png'
+# pathModel = 'models/m-25012018-123527.pth.tar'
 
-nnArchitecture = 'DENSE-NET-121'
-nnClassCount = 14
+# nnArchitecture = 'DENSE-NET-121'
+# nnClassCount = 14
 
-transCrop = 224
+# transCrop = 224
 
-h = HeatmapGenerator(pathModel, nnArchitecture, nnClassCount, transCrop)
-h.generate(pathInputImage, pathOutputImage, transCrop)
+# h = HeatmapGenerator(pathModel, nnArchitecture, nnClassCount, transCrop)
+# h.generate(pathInputImage, pathOutputImage, transCrop)
