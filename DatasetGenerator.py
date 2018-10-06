@@ -64,7 +64,7 @@ class DatasetGenerator (Dataset):
         
         imagePath = self.listImagePaths[index]
         if imagePath[-4:]=='.dcm':
-            dcmimg = pydicom.dcmread(image_name)
+            dcmimg = pydicom.dcmread(imagePath)
             imageData = dcm_to_png(dcmimg).convert('RGB')
         else:
             imageData = Image.open(imagePath).convert('RGB')
