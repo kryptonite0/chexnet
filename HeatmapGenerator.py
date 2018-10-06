@@ -100,7 +100,10 @@ class HeatmapGenerator ():
         #---- Blend original and heatmap 
         npHeatmap = heatmap.cpu().data.numpy()
 
-        imgOriginal = cv2.imread(pathImageFile, 1)
+        if pathImageFile[-4:]=='.dcm':
+            imgOriginal = pydicom.dcmread(pathInputImage0).pixel_array
+        else:    
+            imgOriginal = cv2.imread(pathImageFile, 1)
         imgOriginal = cv2.resize(imgOriginal, (transCrop, transCrop))
         
         cam = npHeatmap / np.max(npHeatmap)
