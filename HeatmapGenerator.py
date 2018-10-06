@@ -73,7 +73,7 @@ class HeatmapGenerator ():
     
     #--------------------------------------------------------------------------------
      
-    def generate (self, pathImageFile, pathOutputFile, transCrop):
+    def generate (self, pathImageFile, transCrop):
         
         #---- Load image, transform, convert 
         if pathImageFile[-4:]=='.dcm':
