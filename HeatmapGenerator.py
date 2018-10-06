@@ -17,6 +17,8 @@ from DensenetModels import DenseNet121
 from DensenetModels import DenseNet169
 from DensenetModels import DenseNet201
 
+from DatasetGenerator import dcm_to_png
+
 #-------------------------------------------------------------------------------- 
 #---- Class to generate heatmaps (CAM)
 
@@ -72,7 +74,12 @@ class HeatmapGenerator ():
     def generate (self, pathImageFile, pathOutputFile, transCrop):
         
         #---- Load image, transform, convert 
-        imageData = Image.open(pathImageFile).convert('RGB')
+        if pathImageFile[-4:]=='.dcm':
+            dcmimg = pydicom.dcmread(pathImageFile)
+            imageData = dcm_to_png(dcmimg).convert('RGB')
+        else:
+            imageData = Image.open(pathImageFile).convert('RGB')
+
         imageData = self.transformSequence(imageData)
         imageData = imageData.unsqueeze_(0)
         
