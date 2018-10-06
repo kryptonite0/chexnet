@@ -307,18 +307,9 @@ class ChexnetTrainer ():
         metrics_pneumonia = ChexnetTrainer.compute_metrics_class(outGT, outPRED, 'Pneumonia')
         print('The AUROC for Pneumonia is {}'.format(metrics_pneumonia['AUROC']))
         print('The accuracy for Pneumonia is {}'.format(metrics_pneumonia['accuracy']))
-        return #metrics_pneumonia
+        return metrics_pneumonia
 
-#         aurocIndividual = ChexnetTrainer.computeAUROC(outGT, outPRED, nnClassCount)
-#         aurocMean = np.array(aurocIndividual).mean()
-        
-#         print ('AUROC mean ', aurocMean)
-        
-#         for i in range (0, len(aurocIndividual)):
-#             print (CLASS_NAMES[i], ' ', aurocIndividual[i])
-        
-     
-#         return
+
 #-------------------------------------------------------------------------------- 
 
 
