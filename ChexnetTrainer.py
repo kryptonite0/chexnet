@@ -304,7 +304,7 @@ class ChexnetTrainer ():
             
             outPRED = torch.cat((outPRED, outMean.data), 0)
 
-        metrics_pneumonia = compute_metrics_class(outGT, outPRED, 'Pneumonia')
+        metrics_pneumonia = ChexnetTrainer.compute_metrics_class(outGT, outPRED, 'Pneumonia')
         print('The AUROC for Pneumonia is {}'.format(metrics_pneumonia['AUROC']))
         print('The accuracy for Pneumonia is {}'.format(metrics_pneumonia['accuracy']))
         return #metrics_pneumonia
