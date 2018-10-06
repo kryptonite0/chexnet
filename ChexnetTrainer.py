@@ -22,6 +22,9 @@ from DensenetModels import DenseNet169
 from DensenetModels import DenseNet201
 from DatasetGenerator import DatasetGenerator
 
+CLASS_NAMES = [ 'Atelectasis', 'Cardiomegaly', 'Effusion', 'Infiltration', 'Mass', 'Nodule', 'Pneumonia',
+                'Pneumothorax', 'Consolidation', 'Edema', 'Emphysema', 'Fibrosis', 'Pleural_Thickening', 'Hernia']
+        
 
 #-------------------------------------------------------------------------------- 
 
@@ -217,9 +220,6 @@ class ChexnetTrainer ():
     
     def test (pathDirData, pathFileTest, pathModel, nnArchitecture, nnClassCount, nnIsTrained, trBatchSize, transResize, transCrop, launchTimeStamp):   
         
-        
-        CLASS_NAMES = [ 'Atelectasis', 'Cardiomegaly', 'Effusion', 'Infiltration', 'Mass', 'Nodule', 'Pneumonia',
-                'Pneumothorax', 'Consolidation', 'Edema', 'Emphysema', 'Fibrosis', 'Pleural_Thickening', 'Hernia']
         
         cudnn.benchmark = True
         
