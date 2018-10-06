@@ -90,7 +90,7 @@ class ChexnetTrainer ():
             # https://github.com/pytorch/vision/blob/50b2f910490a731c4cd50db5813b291860f02237/torchvision/models/densenet.py#L28
             pattern = re.compile(
                 r'^(.*denselayer\d+\.(?:norm|relu|conv))\.((?:[12])\.(?:weight|bias|running_mean|running_var))$')
-            state_dict = checkpoint['state_dict']
+            state_dict = modelCheckpoint['state_dict']
             for key in list(state_dict.keys()):
                 res = pattern.match(key)
                 if res:
