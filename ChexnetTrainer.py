@@ -308,7 +308,75 @@ class ChexnetTrainer ():
         print('The AUROC for Pneumonia is {}'.format(metrics_pneumonia['AUROC']))
         print('The accuracy for Pneumonia is {}'.format(metrics_pneumonia['accuracy']))
         return metrics_pneumonia
+      
+    #-------------------------------------------------------------------------#
+    
+    def predict (pathDirData, pathFileTest, pathModel, nnArchitecture, nnClassCount, nnIsTrained, 
+             trBatchSize, transResize, transCrop, launchTimeStamp):   
 
+
+        cudnn.benchmark = True
+
+        #-------------------- SETTINGS: NETWORK ARCHITECTURE, MODEL LOAD
+        if nnArchitecture == 'DENSE-NET-121': model = DenseNet121(nnClassCount, nnIsTrained).cuda()
+        elif nnArchitecture == 'DENSE-NET-169': model = DenseNet169(nnClassCount, nnIsTrained).cuda()
+        elif nnArchitecture == 'DENSE-NET-201': model = DenseNet201(nnClassCount, nnIsTrained).cuda()
+
+        model = torch.nn.DataParallel(model).cuda() 
+
+        modelCheckpoint = torch.load(pathModel)
+        # https://github.com/KaiyangZhou/deep-person-reid/issues/23
+        pattern = re.compile(
+            r'^(.*denselayer\d+\.(?:norm|relu|conv))\.((?:[12])\.(?:weight|bias|running_mean|running_var))$')
+        state_dict = modelCheckpoint['state_dict']
+        for key in list(state_dict.keys()):
+            res = pattern.match(key)
+            if res:
+                new_key = res.group(1) + res.group(2)
+                state_dict[new_key] = state_dict[key]
+                del state_dict[key]
+        model.load_state_dict(state_dict)
+
+        #-------------------- SETTINGS: DATA TRANSFORMS, TEN CROPS
+        normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+
+        #-------------------- SETTINGS: DATASET BUILDERS
+        transformList = []
+        transformList.append(transforms.Resize(transResize))
+        transformList.append(transforms.TenCrop(transCrop))
+        transformList.append(transforms.Lambda(lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])))
+        transformList.append(transforms.Lambda(lambda crops: torch.stack([normalize(crop) for crop in crops])))
+        transformSequence=transforms.Compose(transformList)
+
+        datasetTest = DatasetGenerator(pathImageDirectory=pathDirData, pathDatasetFile=pathFileTest, transform=transformSequence)
+        dataLoaderTest = DataLoader(dataset=datasetTest, batch_size=trBatchSize, shuffle=False, pin_memory=True) #num_workers=N
+
+        outGT = torch.FloatTensor().cuda()
+        outPRED = torch.FloatTensor().cuda()
+
+        model.eval()
+
+
+        for i, (input, target) in enumerate(dataLoaderTest):
+
+            target = target.cuda()
+            outGT = torch.cat((outGT, target), 0)
+
+            bs, n_crops, c, h, w = input.size()
+
+            varInput = torch.autograd.Variable(input.view(-1, c, h, w).cuda(), volatile=True)
+
+            out = model(varInput)
+
+            outMean = out.view(bs, n_crops, -1).mean(1)
+
+            outPRED = torch.cat((outPRED, outMean.data), 0)
+
+        pneumonia_probas = []
+        for p in outPRED.cpu().data.numpy()[:, CLASS_NAMES.index('Pneumonia')]:
+            pneumonia_probas.append(p)
+
+        return pneumonia_probas
 
 #-------------------------------------------------------------------------------- 
 
